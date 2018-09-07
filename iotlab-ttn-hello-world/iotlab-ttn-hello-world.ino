@@ -8,14 +8,11 @@
 
 // FIN CONFIGURATION TTN
 
-static const uint8_t sensorTriggerPin = 3;
-static const uint8_t sensorEchoPin = 4;
-
 void os_getArtEui (u1_t* buf) { }
 void os_getDevEui (u1_t* buf) { }
 void os_getDevKey (u1_t* buf) { }
 
-static uint8_t distanceCm = 255;
+static uint8_t mydata[] = "Hello, world!";
 static osjob_t sendjob;
 
 const unsigned TX_INTERVAL = 60;
@@ -27,19 +24,9 @@ const lmic_pinmap lmic_pins = {
   .dio = {2, 6, 7},
 };
 
-void reportDistance(osjob_t* j) {
-  digitalWrite(sensorTriggerPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(sensorTriggerPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(sensorTriggerPin, LOW);
-
-  long duration = pulseIn(sensorEchoPin, HIGH);
-  distanceCm = duration * 0.034 / 2;
-
-  LMIC_setTxData2(1, &distanceCm, sizeof(distanceCm), 0);
+void sendHelloWorld(osjob_t* j) {
+  LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
   Serial.println(F("Packet queued"));
-  os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), reportDistance);
 }
 
 void onEvent (ev_t ev) {
@@ -81,6 +68,7 @@ void onEvent (ev_t ev) {
         Serial.write(LMIC.frame + LMIC.dataBeg, LMIC.dataLen);
         Serial.println();
       }
+      os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), sendHelloWorld);
       break;
     case EV_LOST_TSYNC:
       Serial.println(F("EV_LOST_TSYNC"));
@@ -108,9 +96,6 @@ void setup() {
   Serial.begin(115200);
   Serial.println(F("Starting"));
 
-  pinMode(sensorTriggerPin, OUTPUT);
-  pinMode(sensorEchoPin, INPUT);
-
   os_init();
 
   LMIC_reset();
@@ -136,7 +121,7 @@ void setup() {
 
   LMIC_setDrTxpow(DR_SF7, 14);
 
-  reportDistance(&sendjob);
+  sendHelloWorld(&sendjob);
 }
 
 void loop() {
