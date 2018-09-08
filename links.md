@@ -1,0 +1,3 @@
+- Node-RED: http://ec2-52-47-174-172.eu-west-3.compute.amazonaws.com
+- TheThingsNetwork console: https://console.thethingsnetwork.org/
+- TTN application data: https://console.thethingsnetwork.org/applications/technocite-iotlab/data
